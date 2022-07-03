@@ -340,15 +340,14 @@ public class KeyStoreAdmin {
         }
     }
 
-    public void importCertToStore(String fileName, String certData, String keyStoreName)
-            throws SecurityConfigException {
-        try {
-            if (keyStoreName == null) {
-                throw new SecurityConfigException("Key Store name can't be null");
-            }
+    public void importCertToStore(String fileName, X509Certificate cert, String keyStoreName, KeyStore ks) throws SecurityConfigException {
 
-            KeyStore ks = getKeyStore(keyStoreName);
-            X509Certificate cert = extractCertificate(certData);
+        try {
+            if(isCertificateExpired(cert)){
+                Exception e = new SecurityConfigException("Certificate is expired.");
+                log.error(e);
+                throw e;
+            }
 
             if (ks.getCertificateAlias(cert) != null) {
                 // We already have this certificate in the key store - ignore
@@ -363,6 +362,27 @@ public class KeyStoreAdmin {
             if (isTrustStore(keyStoreName)) {
                 System.setProperty(IdentityUtil.PROP_TRUST_STORE_UPDATE_REQUIRED, "true");
             }
+        } catch (SecurityConfigException e) {
+            throw e;
+        } catch (Exception e) {
+            String msg = "Error when importing cert to the keyStore";
+            log.error(msg, e);
+            throw new SecurityConfigException(msg, e);
+        }
+
+    }
+
+    public void importCertToStore(String fileName, String certData, String keyStoreName)
+            throws SecurityConfigException {
+        try {
+            if (keyStoreName == null) {
+                throw new SecurityConfigException("Key Store name can't be null");
+            }
+
+            KeyStore ks = getKeyStore(keyStoreName);
+            X509Certificate cert = extractCertificate(certData);
+
+            importCertToStore(fileName,cert,keyStoreName,ks);
 
         } catch (SecurityConfigException e) {
             throw e;
