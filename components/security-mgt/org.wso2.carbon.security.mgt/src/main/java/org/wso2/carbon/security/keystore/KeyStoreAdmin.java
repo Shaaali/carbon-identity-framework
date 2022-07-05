@@ -348,9 +348,7 @@ public class KeyStoreAdmin {
 
         try {
             if (isCertificateExpired(cert)) {
-                Exception e = new SecurityConfigException("Certificate is expired.");
-                log.error(e);
-                throw e;
+                throw new SecurityConfigException("Certificate " + fileName + " is expired");
             }
 
             if (ks.getCertificateAlias(cert) != null) {
@@ -366,6 +364,7 @@ public class KeyStoreAdmin {
             if (isTrustStore(keyStoreName)) {
                 System.setProperty(IdentityUtil.PROP_TRUST_STORE_UPDATE_REQUIRED, "true");
             }
+
         } catch (SecurityConfigException e) {
             throw e;
         } catch (Exception e) {
@@ -373,15 +372,8 @@ public class KeyStoreAdmin {
             log.error(msg, e);
             throw new SecurityConfigException(msg, e);
         }
-
     }
 
-    /**
-     * @param fileName -
-     * @param certData -
-     * @param keyStoreName -
-     * @throws SecurityConfigException
-     */
     public void importCertToStore(String fileName, String certData, String keyStoreName)
             throws SecurityConfigException {
 
@@ -393,7 +385,7 @@ public class KeyStoreAdmin {
             KeyStore ks = getKeyStore(keyStoreName);
             X509Certificate cert = extractCertificate(certData);
 
-            importCertToStore(fileName,cert,keyStoreName,ks);
+            importCertToStore(fileName, cert, keyStoreName, ks);
 
         } catch (SecurityConfigException e) {
             throw e;
@@ -947,7 +939,11 @@ public class KeyStoreAdmin {
         return cert;
     }
 
-    public static boolean isCertificateExpired(java.security.cert.X509Certificate certificate) {
+    /**
+     * @param certificate - The X509Certificate that needs to be validated
+     * @return
+     */
+    public static boolean isCertificateExpired(X509Certificate certificate) {
 
         if (certificate != null) {
             Date expiresOn = certificate.getNotAfter();
