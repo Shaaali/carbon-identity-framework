@@ -337,10 +337,17 @@ public class KeyStoreAdmin {
         }
     }
 
+    /**
+     * @param fileName - alias of the certificate
+     * @param cert - X509Certificate to be added to Store
+     * @param keyStoreName - Name of the Keystore
+     * @param ks - Key Store
+     * @throws SecurityConfigException
+     */
     public void importCertToStore(String fileName, X509Certificate cert, String keyStoreName, KeyStore ks) throws SecurityConfigException {
 
         try {
-            if(isCertificateExpired(cert)){
+            if (isCertificateExpired(cert)) {
                 Exception e = new SecurityConfigException("Certificate is expired.");
                 log.error(e);
                 throw e;
@@ -369,8 +376,15 @@ public class KeyStoreAdmin {
 
     }
 
+    /**
+     * @param fileName -
+     * @param certData -
+     * @param keyStoreName -
+     * @throws SecurityConfigException
+     */
     public void importCertToStore(String fileName, String certData, String keyStoreName)
             throws SecurityConfigException {
+
         try {
             if (keyStoreName == null) {
                 throw new SecurityConfigException("Key Store name can't be null");
