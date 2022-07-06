@@ -171,7 +171,9 @@ public class SecurityConstants {
                     "Unsupported filter operation %s."),
             ERROR_CODE_EMPTY_ALIAS("KSS-60005", "Alias value can not be null."),
             ERROR_CODE_INVALID_CERTIFICATE("KSS-60006", "Provided certificate is invalid."),
-            ERROR_CODE_CANNOT_DELETE_TENANT_CERT("KSS-60007", "Not allowed to delete the tenant certificate %s.");
+            ERROR_CODE_CANNOT_DELETE_TENANT_CERT("KSS-60007", "Not allowed to delete the tenant certificate %s."),
+
+            ERROR_CODE_EXPIRED_CERTIFICATE("KSS-60008", "Not allowed to delete the tenant certificate %s.");
 
             private final String code;
             private final String message;
