@@ -44,6 +44,8 @@ import org.wso2.carbon.security.keystore.service.PaginatedKeyStoreData;
 import org.wso2.carbon.security.util.KeyStoreMgtUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import static org.wso2.carbon.security.SecurityConstants.KeyStoreMgtConstants.ErrorMessage.ERROR_CODE_EMPTY_ALIAS;
+import static org.wso2.carbon.security.SecurityConstants.KeyStoreMgtConstants.ErrorMessage.ERROR_CODE_EXPIRED_CERTIFICATE;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -344,11 +346,13 @@ public class KeyStoreAdmin {
      * @param ks - Key Store
      * @throws SecurityConfigException
      */
-    public void importCertToStore(String fileName, X509Certificate cert, String keyStoreName, KeyStore ks) throws SecurityConfigException {
+    public void importCertToStore(String fileName, X509Certificate cert, String keyStoreName, KeyStore ks) throws SecurityConfigException, Exception {
 
         try {
             if (isCertificateExpired(cert)) {
-                throw new SecurityConfigException("Certificate " + fileName + " is expired");
+                // TODO: 7/6/22 add more context to this log
+                String message = "Certificate is Expired";
+                throw new KeyStoreManagementClientException(ERROR_CODE_EXPIRED_CERTIFICATE.getCode(), message);
             }
 
             if (ks.getCertificateAlias(cert) != null) {
@@ -370,7 +374,7 @@ public class KeyStoreAdmin {
         } catch (Exception e) {
             String msg = "Error when importing cert to the keyStore";
             log.error(msg, e);
-            throw new SecurityConfigException(msg, e);
+            throw e;
         }
     }
 
