@@ -104,12 +104,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Date;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -131,7 +131,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.*;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_NOT_FOUND;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.EXPIRED_CERTIFICATE;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.INVALID_REQUEST;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.OPERATION_FORBIDDEN;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.UNEXPECTED_SERVER_ERROR;
 import static org.wso2.carbon.identity.application.mgt.ApplicationConstants.APPLICATION_NAME_CONFIG_ELEMENT;
 import static org.wso2.carbon.identity.application.mgt.ApplicationConstants.SYSTEM_APPLICATIONS_CONFIG_ELEMENT;
 import static org.wso2.carbon.identity.application.mgt.ApplicationMgtUtil.buildSPData;
@@ -913,7 +918,7 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 }
             }
 
-            String[] allLocalClaimUris = (claimUris.toArray(new String[claimUris.size()]));
+            String[] allLocalClaimUris = (claimUris.toArray(new String[0]));
             if (ArrayUtils.isNotEmpty(allLocalClaimUris)) {
                 Arrays.sort(allLocalClaimUris);
             }
