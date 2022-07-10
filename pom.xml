@@ -2006,7 +2006,7 @@
         <h2database.version>2.1.210</h2database.version>
 
         <maven.checkstyleplugin.version>3.1.0</maven.checkstyleplugin.version>
-        <maven.findbugsplugin.version>3.0.5</maven.findbugsplugin.version>
+        <maven.findbugsplugin.version>3.0.4</maven.findbugsplugin.version>
 
         <account.lock.service.version>1.4.23</account.lock.service.version>
         <account.lock.service.imp.pkg.version.range>[1.4.23, 2.0.0)</account.lock.service.imp.pkg.version.range>
