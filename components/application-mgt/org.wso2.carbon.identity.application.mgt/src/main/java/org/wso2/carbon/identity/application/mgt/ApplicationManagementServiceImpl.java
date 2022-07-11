@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.application.mgt;
 
 import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.util.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -78,7 +77,6 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.RegistryConstants;
-import org.wso2.carbon.security.SecurityConfigException;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserRealm;
@@ -97,14 +95,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -133,7 +128,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_NOT_FOUND;
-import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.EXPIRED_CERTIFICATE;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.INVALID_REQUEST;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.OPERATION_FORBIDDEN;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.UNEXPECTED_SERVER_ERROR;
@@ -2483,49 +2477,6 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             throw buildClientException(INVALID_REQUEST,
                     String.format(error, updatedApp.getApplicationName(), tenantDomain));
         }
-        try {
-
-            X509Certificate certificate = extractCertificate(updatedApp.getCertificateContent());
-            if (isCertificateExpired(certificate)) {
-                String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
-                        "is expired.";
-                throw buildClientException(EXPIRED_CERTIFICATE,
-                        String.format(error, updatedApp.getApplicationName(), tenantDomain));
-            }
-        } catch (SecurityConfigException e) {
-            String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
-                    "is malformed.";
-            throw buildClientException(INVALID_REQUEST,
-                    String.format(error, updatedApp.getApplicationName(), tenantDomain));
-        }
-    }
-
-    private static boolean isCertificateExpired(X509Certificate certificate) {
-
-        if (certificate != null) {
-            Date expiresOn = certificate.getNotAfter();
-            Date now = new Date();
-            long validityPeriod = (expiresOn.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-            return validityPeriod < 0;
-        }
-        return true;
-    }
-
-    private X509Certificate extractCertificate(String certData) throws SecurityConfigException {
-
-        byte[] bytes = Base64.decode(certData);
-        X509Certificate cert;
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            cert = (X509Certificate) factory
-                    .generateCertificate(new ByteArrayInputStream(bytes));
-        } catch (CertificateException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(e.getMessage(), e);
-            }
-            throw new SecurityConfigException("Invalid format of the provided certificate file");
-        }
-        return cert;
     }
 
     private void validateApplicationConfigurations(ServiceProvider application,
