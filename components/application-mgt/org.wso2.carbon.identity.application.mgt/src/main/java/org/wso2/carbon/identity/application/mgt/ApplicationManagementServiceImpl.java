@@ -133,6 +133,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.APPLICATION_NOT_FOUND;
+import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.EXPIRED_CERTIFICATE;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.INVALID_REQUEST;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.OPERATION_FORBIDDEN;
 import static org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants.Error.UNEXPECTED_SERVER_ERROR;
@@ -2487,13 +2488,13 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             if (isCertificateExpired(cert)) {
                 String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
                         "is expired.";
-                throw buildClientException(INVALID_REQUEST,
+                throw buildClientException(EXPIRED_CERTIFICATE,
                         String.format(error, updatedApp.getApplicationName(), tenantDomain));
             }
 
         } catch (Exception e) {
             String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
-                    "is expired.";
+                    "is malformed.";
             throw buildClientException(INVALID_REQUEST,
                     String.format(error, updatedApp.getApplicationName(), tenantDomain));
         }
