@@ -2483,34 +2483,32 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             throw buildClientException(INVALID_REQUEST,
                     String.format(error, updatedApp.getApplicationName(), tenantDomain));
         }
-        try {
-            X509Certificate cert = extractCertificate(updatedApp.getCertificateContent());
-            if (isCertificateExpired(cert)) {
+        if (StringUtils.isNotEmpty(updatedApp.getCertificateContent())) {
+            try {
+                X509Certificate cert = extractCertificate(updatedApp.getCertificateContent());
+                if (isCertificateExpired(cert)) {
+                    String error =
+                            "Provided application certificate for application with name: %s in tenantDomain: %s " +
+                                    "is expired.";
+                    throw buildClientException(EXPIRED_CERTIFICATE,
+                            String.format(error, updatedApp.getApplicationName(), tenantDomain));
+                }
+
+            } catch (CertificateException e) {
                 String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
-                        "is expired.";
-                throw buildClientException(EXPIRED_CERTIFICATE,
+                        "is malformed.";
+                throw buildClientException(INVALID_REQUEST,
                         String.format(error, updatedApp.getApplicationName(), tenantDomain));
             }
-
-        } catch (Exception e) {
-            String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
-                    "is malformed.";
-            throw buildClientException(INVALID_REQUEST,
-                    String.format(error, updatedApp.getApplicationName(), tenantDomain));
         }
     }
 
-    private X509Certificate extractCertificate(String certData) throws Exception {
+    private X509Certificate extractCertificate(String certData) throws CertificateException {
 
         byte[] bytes = Base64.decode(certData);
         X509Certificate cert;
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            cert = (X509Certificate) factory
-                    .generateCertificate(new ByteArrayInputStream(bytes));
-        } catch (CertificateException e) {
-            throw new Exception("Invalid format of the provided certificate file");
-        }
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+        cert = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(bytes));
         return cert;
     }
 
@@ -2522,10 +2520,9 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             return validityPeriod < 0;
         }
         return true;
-
     }
 
-        private void validateApplicationConfigurations(ServiceProvider application,
+    private void validateApplicationConfigurations(ServiceProvider application,
                                                    String tenantDomain,
                                                    String username) throws IdentityApplicationManagementException {
 
