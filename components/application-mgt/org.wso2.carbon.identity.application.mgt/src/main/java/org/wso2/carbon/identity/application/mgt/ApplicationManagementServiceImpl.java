@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.application.mgt;
 
 import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.util.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -89,17 +90,21 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2477,9 +2482,49 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
             throw buildClientException(INVALID_REQUEST,
                     String.format(error, updatedApp.getApplicationName(), tenantDomain));
         }
+        try {
+            X509Certificate cert = extractCertificate(updatedApp.getCertificateContent());
+            if (isCertificateExpired(cert)) {
+                String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
+                        "is expired.";
+                throw buildClientException(INVALID_REQUEST,
+                        String.format(error, updatedApp.getApplicationName(), tenantDomain));
+            }
+
+        } catch (Exception e) {
+            String error = "Provided application certificate for application with name: %s in tenantDomain: %s " +
+                    "is expired.";
+            throw buildClientException(INVALID_REQUEST,
+                    String.format(error, updatedApp.getApplicationName(), tenantDomain));
+        }
     }
 
-    private void validateApplicationConfigurations(ServiceProvider application,
+    private X509Certificate extractCertificate(String certData) throws Exception {
+
+        byte[] bytes = Base64.decode(certData);
+        X509Certificate cert;
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            cert = (X509Certificate) factory
+                    .generateCertificate(new ByteArrayInputStream(bytes));
+        } catch (CertificateException e) {
+            throw new Exception("Invalid format of the provided certificate file");
+        }
+        return cert;
+    }
+
+    private static boolean isCertificateExpired(X509Certificate certificate) {
+        if (certificate != null) {
+            Date expiresOn = certificate.getNotAfter();
+            Date now = new Date();
+            long validityPeriod = (expiresOn.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+            return validityPeriod < 0;
+        }
+        return true;
+
+    }
+
+        private void validateApplicationConfigurations(ServiceProvider application,
                                                    String tenantDomain,
                                                    String username) throws IdentityApplicationManagementException {
 
